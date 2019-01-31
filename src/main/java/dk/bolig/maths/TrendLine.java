@@ -1,4 +1,4 @@
-package dk.bolig.math;
+package dk.bolig.maths;
 
 public interface TrendLine {
     public void setValues(double[] y, double[] x); // y ~ f(x)

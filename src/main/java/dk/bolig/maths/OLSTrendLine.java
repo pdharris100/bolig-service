@@ -1,4 +1,4 @@
-package dk.bolig.math;
+package dk.bolig.maths;
 
 import java.util.Arrays;
 

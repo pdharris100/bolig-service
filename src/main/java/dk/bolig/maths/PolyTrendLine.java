@@ -1,4 +1,4 @@
-package dk.bolig.math;
+package dk.bolig.maths;
 
 public class PolyTrendLine extends OLSTrendLine {
     final int degree;
