@@ -23,7 +23,7 @@ public class PriceEstimator {
     
 	public static EstimateDTO estimate(double [][] salesData) throws IOException {
 		TrendLine t = new PolyTrendLine(2);
-		t.setValues(salesData[0], salesData[1]);
+		t.setValues(salesData[1], salesData[0]);
 	    
 		LOG.debug(salesData[0].length + " sales");
 	    LOG.debug(String.valueOf(t.predict(Double.valueOf((new GregorianCalendar()).getTime().getTime())))); 
