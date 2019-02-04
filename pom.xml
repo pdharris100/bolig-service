@@ -15,11 +15,6 @@
 	</parent>
 
 	<dependencies>
-		<dependency>
-			<!-- Setup Spring Boot -->
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
-		</dependency>
 
 		<dependency>
 			<!-- Setup Spring MVC & REST, use Embedded Tomcat -->
