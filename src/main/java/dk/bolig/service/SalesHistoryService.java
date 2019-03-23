@@ -12,6 +12,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,6 +26,8 @@ public class SalesHistoryService {
 	public static final String ORIGINAL_STREET_URL = "origgade";
 	public static final String AND = "&";
 	public static final String EQUALS_URL = "=";
+	
+    //@Cacheable("estimate")
 	public double[][] getSalesDataForPostCodeAndStreet(String postCode, String street) throws IOException {
 		postCode = processPostCode(postCode);
 		String type = "Ejerlejlighed";
