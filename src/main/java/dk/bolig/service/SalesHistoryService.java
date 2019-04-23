@@ -1,11 +1,14 @@
 package dk.bolig.service;
 
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -72,6 +75,7 @@ public class SalesHistoryService {
 			if ("family".equals(date)) continue;
 			
             String price = parsePrice(row.select("h5:eq(3)").toString());
+             
             if (price.equals("error")) continue;
             
             xDataSet.add(Double.valueOf(date.getTime()));
@@ -99,9 +103,12 @@ public class SalesHistoryService {
 	private String parsePrice(String string) {
     	String [] tokens = string.split(" k");
 		String price = tokens[0].substring(17);
-		try {
-			Double.valueOf(price);
-		} catch (NumberFormatException e) {
+		LOG.debug("Price string: " + price);
+        NumberFormat nf = NumberFormat.getInstance(Locale.GERMAN);	
+ 		try {
+			price = nf.parse(price).toString();
+			LOG.debug("Parsed string: " + price);
+		} catch (Exception e) {
 			price = "error";
 		}
 		return price;

@@ -25,7 +25,7 @@ public class PriceEstimator {
 		TrendLine t = new PolyTrendLine(2);
 		t.setValues(salesData[1], salesData[0]);
 		double prediction = t.predict(Double.valueOf((new GregorianCalendar()).getTime().getTime()));
-	    String predictionRounded = String.valueOf(Math.round(prediction*10.0)/10.0);
+	    String predictionRounded = String.valueOf(Math.round(prediction));
 		
 	    LOG.debug(salesData[0].length + " sales");
 	    LOG.debug(predictionRounded); 
