@@ -24,13 +24,15 @@ public class PriceEstimator {
 	public static EstimateDTO estimate(double [][] salesData) throws IOException {
 		TrendLine t = new PolyTrendLine(2);
 		t.setValues(salesData[1], salesData[0]);
-	    
-		LOG.debug(salesData[0].length + " sales");
-	    LOG.debug(String.valueOf(t.predict(Double.valueOf((new GregorianCalendar()).getTime().getTime())))); 
+		double prediction = t.predict(Double.valueOf((new GregorianCalendar()).getTime().getTime()));
+	    String predictionRounded = String.valueOf(Math.round(prediction*10.0)/10.0);
+		
+	    LOG.debug(salesData[0].length + " sales");
+	    LOG.debug(predictionRounded); 
 	    
 	    EstimateDTO estimate = new EstimateDTO();
 	    estimate.setNumberOfSales(String.valueOf(salesData[0].length));
-	    estimate.setPrice(String.valueOf(t.predict(Double.valueOf((new GregorianCalendar()).getTime().getTime()))));
+	    estimate.setPrice(predictionRounded);
 	    
 	    return estimate;	    
     }
