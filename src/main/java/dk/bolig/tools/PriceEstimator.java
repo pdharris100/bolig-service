@@ -22,13 +22,14 @@ public class PriceEstimator {
 	private static final Logger LOG = LoggerFactory.getLogger(PriceEstimator.class);
     
 	public static EstimateDTO estimate(double [][] salesData) throws IOException {
-		TrendLine t = new PolyTrendLine(2);
+		TrendLine t = new PolyTrendLine(1);
 		t.setValues(salesData[1], salesData[0]);
 		double prediction = t.predict(Double.valueOf((new GregorianCalendar()).getTime().getTime()));
 	    String predictionRounded = String.valueOf(Math.round(prediction));
 		
+	    LOG.debug("Price = " + predictionRounded); 
 	    LOG.debug(salesData[0].length + " sales");
-	    LOG.debug(predictionRounded); 
+	    LOG.debug("Standard Error: " + t.getStandardError());
 	    
 	    EstimateDTO estimate = new EstimateDTO();
 	    estimate.setNumberOfSales(String.valueOf(salesData[0].length));

@@ -66,16 +66,16 @@ public class SalesHistoryService {
         Elements rows = doc.select("[class=d-md-none d-block]");
         for (Element row : rows) {
             String dateString = parseDate(row.select("h5:eq(1)").toString()); 
+			if ("family".equals(dateString)) continue;
+			
             Date date;
 			try {
 				date = new SimpleDateFormat("MM-dd-yyyy").parse(dateString);
 			} catch (ParseException e) {
 				continue;
 			}
-			if ("family".equals(date)) continue;
 			
-            String price = parsePrice(row.select("h5:eq(3)").toString());
-             
+            String price = parsePrice(row.select("h5:eq(3)").toString());             
             if (price.equals("error")) continue;
             
             xDataSet.add(Double.valueOf(date.getTime()));
