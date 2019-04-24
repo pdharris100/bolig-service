@@ -65,18 +65,21 @@ public class SalesHistoryService {
 	private void process(Document doc, List <Double> xDataSet, List <Double> yDataSet) {
         Elements rows = doc.select("[class=d-md-none d-block]");
         for (Element row : rows) {
-            String dateString = parseDate(row.select("h5:eq(1)").toString()); 
-			if ("family".equals(dateString)) continue;
+        	String dateElement = row.select("h5:eq(1)").toString();
+            String dateString = parseDate(dateElement); 
+			if ("error".equals(dateString)) continue;
 			
             Date date;
 			try {
-				date = new SimpleDateFormat("MM-dd-yyyy").parse(dateString);
+				date = new SimpleDateFormat("dd-MM-yyyy").parse(dateString);
 			} catch (ParseException e) {
 				continue;
 			}
 			
             String price = parsePrice(row.select("h5:eq(3)").toString());             
             if (price.equals("error")) continue;
+            
+            LOG.debug(date + " " + price);
             
             xDataSet.add(Double.valueOf(date.getTime()));
             yDataSet.add(Double.valueOf(price));
@@ -103,11 +106,9 @@ public class SalesHistoryService {
 	private String parsePrice(String string) {
     	String [] tokens = string.split(" k");
 		String price = tokens[0].substring(17);
-		LOG.debug("Price string: " + price);
         NumberFormat nf = NumberFormat.getInstance(Locale.GERMAN);	
  		try {
 			price = nf.parse(price).toString();
-			LOG.debug("Parsed string: " + price);
 		} catch (Exception e) {
 			price = "error";
 		}
@@ -116,8 +117,8 @@ public class SalesHistoryService {
 	}
 	
 	private String parseDate(String string) {
-    	if (string.contains("Fam.")) {
-    		return "family";
+    	if (!string.contains("Alm.")) {
+    		return "error";
     	}
 		String [] tokens = string.split(",");
 		String date = tokens[0].substring(4);
