@@ -5,28 +5,35 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EstimateDTO {
 
-    private String numberOfSales;
-    
-	    private String price;
+	private String numberOfSales;
+	private String price;
+	private double [][] salesHistory;
 
-	    public EstimateDTO() {
-	    }
+	public double[][] getSalesHistory() {
+		return salesHistory;
+	}
 
-	    public String getNumberOfSales() {
-	        return numberOfSales;
-	    }
+	public void setSalesHistory(double[][] salesHistory) {
+		this.salesHistory = salesHistory;
+	}
 
-	    public void setNumberOfSales(String type) {
-	        this.numberOfSales = type;
-	    }
+	public EstimateDTO() {
+	}
 
-	    public String getPrice() {
-	        return price;
-	    }
+	public String getNumberOfSales() {
+		return numberOfSales;
+	}
 
-	    public void setPrice(String value) {
-	        this.price = value;
-	    }
+	public void setNumberOfSales(String type) {
+		this.numberOfSales = type;
+	}
+
+	public String getPrice() {
+		return price;
+	}
+
+	public void setPrice(String value) {
+		this.price = value;
+	}
 
 }
-

@@ -25,6 +25,9 @@ public class EstimateController {
     		@RequestParam(value="street") String street) throws IOException {
     	LOG.debug("********** Estimating for " + street + " " + postcode);
     	SalesHistoryService salesHistoryService = new SalesHistoryService();
-        return PriceEstimator.estimate(salesHistoryService.getSalesDataForPostCodeAndStreet(postcode, street));
+    	double [][] salesHistory = salesHistoryService.getSalesDataForPostCodeAndStreet(postcode, street);
+        EstimateDTO estimate = PriceEstimator.estimate(salesHistory);
+        estimate.setSalesHistory(salesHistory);
+        return estimate;
     }
 }
