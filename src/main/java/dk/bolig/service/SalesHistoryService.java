@@ -42,27 +42,24 @@ public class SalesHistoryService {
 				AND + "minsaledate=2009&origgade=" + street;
 		
         int page = 1; 
-        List <Double> xDataSet = new ArrayList <Double>();
-        List <Double> yDataSet = new ArrayList <Double>();
+        List <double []> dataSet = new ArrayList <double []>();
 		while (true) {
 			Document doc = Jsoup.connect(url + "&p=" + page).get();
 			if (rowsExist(doc)) {
-				process(doc, xDataSet, yDataSet);
+				process(doc, dataSet);
 				page ++;
 			} else {
 				break;
 			}			
 		}  
-		
-	    double[] x = new double [xDataSet.size()];
-	    double[] y = new double [yDataSet.size()];
-	    for (int i=0; i<xDataSet.size(); i++) { x [i] = xDataSet.get(i); }
-	    for (int i=0; i<yDataSet.size(); i++) { y [i] = yDataSet.get(i); }
+
+		double [][] dataArray = new double [dataSet.size()][]; 
+		dataArray = dataSet.toArray(dataArray);
 	    
-	    return new double[][]{x, y};
+		return dataArray;
     }
 	
-	private void process(Document doc, List <Double> xDataSet, List <Double> yDataSet) {
+	private void process(Document doc, List <double []> dataSet) {
         Elements rows = doc.select("[class=d-md-none d-block]");
         for (Element row : rows) {
         	String dateElement = row.select("h5:eq(1)").toString();
@@ -81,8 +78,7 @@ public class SalesHistoryService {
             
             LOG.debug(date + " " + price);
             
-            xDataSet.add(Double.valueOf(date.getTime()));
-            yDataSet.add(Double.valueOf(price));
+            dataSet.add(new double [] { Double.valueOf(date.getTime()), Double.valueOf(price) });
         }
 	}
 	
