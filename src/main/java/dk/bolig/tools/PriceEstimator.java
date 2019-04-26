@@ -1,6 +1,8 @@
 package dk.bolig.tools;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.slf4j.Logger;
@@ -14,15 +16,21 @@ public class PriceEstimator {
 
 		SimpleRegression regression = new SimpleRegression();
 		regression.addData(salesData);
-		String simplePredictionRounded = String
-				.valueOf(Math.round(regression.predict((new GregorianCalendar()).getTime().getTime())));
+		long today = (new GregorianCalendar()).getTime().getTime();
+		long originDate = 1230764400000l; // 01-01-2009
+		long simplePredictionRounded = Math.round(regression.predict(today));
+		long originPredictionRounded = Math.round(regression.predict(originDate));
 
 		LOG.debug("Price = " + simplePredictionRounded);
+		LOG.debug("Origin Price: " + originPredictionRounded);
 		LOG.debug(salesData.length + " sales");
 
 		EstimateDTO estimate = new EstimateDTO();
-		estimate.setNumberOfSales(String.valueOf(salesData.length));
 		estimate.setPrice(simplePredictionRounded);
+		estimate.setTrend(new double [][] {
+			{originDate, originPredictionRounded},
+			{today, simplePredictionRounded}
+			});
 
 		return estimate;
 	}
