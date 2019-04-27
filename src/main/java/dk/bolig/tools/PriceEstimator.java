@@ -1,8 +1,6 @@
 package dk.bolig.tools;
 
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.slf4j.Logger;
