@@ -1,53 +1,47 @@
 package dk.bolig.service;
 
 import java.io.IOException;
-import java.text.NumberFormat;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class SalesHistoryService {
 	private static final Logger LOG = LoggerFactory.getLogger(SalesHistoryService.class);
 
-	public static final String BASE_URL = "https://www.boliga.dk/salg/resultater?so=1&sort=omregnings_dato-a&maxsaledate=today";
-	public static final String POST_CODE_URL = "iPostnr";
-	public static final String STREET_URL = "gade";
-	public static final String TYPE_URL = "type";
-	public static final String ORIGINAL_STREET_URL = "origgade";
-	public static final String AND = "&";
-	public static final String EQUALS_URL = "=";
+	private static final String BASE_URL = "https://api.boliga.dk/api/v2/sold/search/results";
 
 	// @Cacheable("estimate")
 	public double[][] getSalesDataForPostCodeAndStreet(String postCode, String street) throws IOException {
-		postCode = processPostCode(postCode);
-		String type = "Ejerlejlighed";
-
-		String url = BASE_URL + AND + POST_CODE_URL + EQUALS_URL + postCode + AND + STREET_URL + EQUALS_URL + street
-				+ AND + TYPE_URL + EQUALS_URL + type + AND + "minsaledate=2009&origgade=" + street;
+		RestTemplate restTemplate = new RestTemplate();
+		UriComponentsBuilder builder = UriComponentsBuilder.fromPath(BASE_URL).queryParam("zipcodeFrom", postCode)
+				.queryParam("zipcodeTo", postCode).queryParam("street", street);
 
 		int page = 1;
 		List<double[]> dataSet = new ArrayList<double[]>();
-		while (true) {
-			Document doc = Jsoup.connect(url + "&p=" + page).get();
-			if (rowsExist(doc)) {
-				process(doc, dataSet);
-				page++;
-			} else {
-				break;
-			}
+
+		ResponseEntity<String> response = callBoliga(restTemplate, builder, page);
+		processResults(dataSet, response);		
+		
+		while (page < getMaxPage(response)) {
+			page++;
+			response = callBoliga(restTemplate, builder, page);
+			processResults(dataSet, response);	
 		}
 
 		double[][] dataArray = new double[dataSet.size()][];
@@ -56,29 +50,52 @@ public class SalesHistoryService {
 		return dataArray;
 	}
 
-	private void process(Document doc, List<double[]> dataSet) {
-		Elements rows = doc.select("[class=d-md-none d-block]");
-		for (Element row : rows) {
-			String dateElement = row.select("h5:eq(1)").toString();
-			String dateString = parseDate(dateElement);
-			if ("error".equals(dateString))
-				continue;
+	private ResponseEntity<String> callBoliga(RestTemplate restTemplate, UriComponentsBuilder builder, int page) {
+		builder.queryParam("page", page);
+		LOG.debug("****** Connecting to " + builder.toUriString());
+		ResponseEntity<String> response = restTemplate.getForEntity(builder.toUriString(), String.class);
+		LOG.debug("****** Response " + response.getBody());
+		return response;
+	}
 
-			Date date;
-			try {
-				date = new SimpleDateFormat("dd-MM-yyyy").parse(dateString);
-			} catch (ParseException e) {
-				continue;
-			}
-
-			String price = parsePrice(row.select("h5:eq(3)").toString());
-			if (price.equals("error"))
-				continue;
-
-			LOG.debug(date + " " + price);
-
-			dataSet.add(new double[] { Double.valueOf(date.getTime()), Double.valueOf(price) });
+	private void processResults(List<double[]> dataSet, ResponseEntity<String> response) {
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode root;
+		try {
+			root = mapper.readTree(response.getBody());
+		} catch (IOException e1) {
+			return;
 		}
+		JsonNode results = root.get("results");
+		if (results != null) {
+			Iterator<JsonNode> iter = results.iterator();
+			while (iter.hasNext()) {
+				JsonNode resultNode = iter.next();
+				Date date;
+				try {
+					date = new SimpleDateFormat("yyyy-MM-dd").parse(resultNode.get("soldDate").asText());
+				} catch (ParseException e) {
+					continue;
+				}
+
+				long price = resultNode.get("price").asLong();
+
+				LOG.debug(date + " " + price);
+
+				dataSet.add(new double[] { Double.valueOf(date.getTime()), Double.valueOf(price) });
+			}
+		}
+	}
+	
+	private int getMaxPage(ResponseEntity<String> response) {
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode root;
+		try {
+			root = mapper.readTree(response.getBody());
+		} catch (IOException e1) {
+			return Integer.MIN_VALUE;
+		}
+		return root.path("meta").path("maxPage").asInt();
 	}
 
 	private String processPostCode(String postCode) {
@@ -94,37 +111,4 @@ public class SalesHistoryService {
 		}
 	}
 
-	private boolean rowsExist(Document doc) {
-		return !(doc.select("[class=d-md-none d-block]").isEmpty());
-	}
-
-	private String parsePrice(String string) {
-		String[] tokens = string.split(" k");
-		String price = tokens[0].substring(17);
-
-		NumberFormat nf = NumberFormat.getInstance(Locale.GERMAN);
-
-		try {
-			Number priceNum = nf.parse(price);
-			if (priceNum.longValue() > 150000) {
-				price = "error";
-			} else {
-				price = priceNum.toString();
-			}
-		} catch (Exception e) {
-			price = "error";
-		}
-
-		return price;
-
-	}
-
-	private String parseDate(String string) {
-		if (!string.contains("Alm.")) {
-			return "error";
-		}
-		String[] tokens = string.split(",");
-		String date = tokens[0].substring(4);
-		return date;
-	}
 }
