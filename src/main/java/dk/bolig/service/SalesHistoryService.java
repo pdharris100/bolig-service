@@ -72,6 +72,11 @@ public class SalesHistoryService {
 			Iterator<JsonNode> iter = results.iterator();
 			while (iter.hasNext()) {
 				JsonNode resultNode = iter.next();
+				
+				if (!resultNode.path("saleType").asText().equals("Alm. Salg")) {
+					continue;
+				}
+				
 				Date date;
 				try {
 					date = new SimpleDateFormat("yyyy-MM-dd").parse(resultNode.get("soldDate").asText());
@@ -80,6 +85,9 @@ public class SalesHistoryService {
 				}
 
 				double price = resultNode.get("sqmPrice").asDouble();
+				if (price > 150000) {
+					continue;
+				}
 
 				LOG.debug(date + " " + price);
 
