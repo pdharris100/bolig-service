@@ -31,7 +31,7 @@ public class SalesHistoryService {
 				+ "zipcodeFrom=" + postCode
 				+ "&zipcodeTo=" + postCode
 				+ "&street=" + street
-				+ "&propertyType=3&sort=date-d";
+				+ "&salesDateMin=2009&propertyType=3&sort=date-d";
 		
 		int page = 1;
 		List<double[]> dataSet = new ArrayList<double[]>();
@@ -79,11 +79,11 @@ public class SalesHistoryService {
 					continue;
 				}
 
-				long price = resultNode.get("price").asLong();
+				double price = resultNode.get("sqmPrice").asDouble();
 
 				LOG.debug(date + " " + price);
 
-				dataSet.add(new double[] { Double.valueOf(date.getTime()), Double.valueOf(price) });
+				dataSet.add(new double[] { Double.valueOf(date.getTime()), price });
 			}
 		}
 	}
