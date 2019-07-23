@@ -24,23 +24,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class SalesHistoryService {
 	private static final Logger LOG = LoggerFactory.getLogger(SalesHistoryService.class);
 
-	private static final String BASE_URL = "https://api.boliga.dk/api/v2/sold/search/results";
-
 	// @Cacheable("estimate")
 	public double[][] getSalesDataForPostCodeAndStreet(String postCode, String street) throws IOException {
 		RestTemplate restTemplate = new RestTemplate();
-		UriComponentsBuilder builder = UriComponentsBuilder.fromPath(BASE_URL).queryParam("zipcodeFrom", postCode)
-				.queryParam("zipcodeTo", postCode).queryParam("street", street);
-
+		String url = "https://api.boliga.dk/api/v2/sold/search/results?"
+				+ "zipcodeFrom=" + postCode
+				+ "&zipcodeTo=" + postCode
+				+ "&street=" + street
+				+ "&propertyType=3&sort=date-d";
+		
 		int page = 1;
 		List<double[]> dataSet = new ArrayList<double[]>();
 
-		ResponseEntity<String> response = callBoliga(restTemplate, builder, page);
+		ResponseEntity<String> response = callBoliga(restTemplate, url, page);
 		processResults(dataSet, response);		
 		
 		while (page < getMaxPage(response)) {
 			page++;
-			response = callBoliga(restTemplate, builder, page);
+			response = callBoliga(restTemplate, url, page);
 			processResults(dataSet, response);	
 		}
 
@@ -50,11 +51,11 @@ public class SalesHistoryService {
 		return dataArray;
 	}
 
-	private ResponseEntity<String> callBoliga(RestTemplate restTemplate, UriComponentsBuilder builder, int page) {
-		builder.queryParam("page", page);
-		LOG.debug("****** Connecting to " + builder.toUriString());
-		ResponseEntity<String> response = restTemplate.getForEntity(builder.toUriString(), String.class);
-		LOG.debug("****** Response " + response.getBody());
+	private ResponseEntity<String> callBoliga(RestTemplate restTemplate, String url, int page) {
+		url = url + "&page=" + page;
+		//LOG.debug("****** Connecting to " + url);
+		ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+		//LOG.debug("****** Response " + response.getBody());
 		return response;
 	}
 
