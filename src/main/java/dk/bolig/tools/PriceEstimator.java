@@ -15,7 +15,7 @@ public class PriceEstimator {
 		SimpleRegression regression = new SimpleRegression();
 		regression.addData(salesData);
 		long today = (new GregorianCalendar()).getTime().getTime();
-		long originDate = 1230764400000l; // 01-01-2009
+		long originDate = 1325372400000l; // 01-01-2012
 		long simplePredictionRounded = Math.round(regression.predict(today));
 		long originPredictionRounded = Math.round(regression.predict(originDate));
 
