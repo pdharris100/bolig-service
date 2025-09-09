@@ -1,32 +1,38 @@
 package dk.bolig.service;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class SalesHistoryService {
-	private static final Logger LOG = LoggerFactory.getLogger(SalesHistoryService.class);
+	private static final Logger LOG = LoggerFactory.getLogger(SalesHistoryService.class);	
+	private final RestTemplate restTemplate;
+	private final ObjectMapper objectMapper;
+
+	@Autowired
+	public SalesHistoryService(RestTemplate restTemplate, ObjectMapper objectMapper) {
+		this.restTemplate = restTemplate;
+		this.objectMapper = objectMapper;
+	}
 
 	// @Cacheable("estimate")
 	public double[][] getSalesDataForPostCodeAndStreet(String postCode, String street) throws IOException {
-		RestTemplate restTemplate = new RestTemplate();
 		String url = "https://api.boliga.dk/api/v2/sold/search/results?"
 				+ "zipcodeFrom=" + postCode
 				+ "&zipcodeTo=" + postCode
@@ -36,12 +42,12 @@ public class SalesHistoryService {
 		int page = 1;
 		List<double[]> dataSet = new ArrayList<double[]>();
 
-		ResponseEntity<String> response = callBoliga(restTemplate, url, page);
+		ResponseEntity<String> response = callBoliga(url, page);
 		processResults(dataSet, response);		
 		
 		while (page < getMaxPage(response)) {
 			page++;
-			response = callBoliga(restTemplate, url, page);
+			response = callBoliga(url, page);
 			processResults(dataSet, response);	
 		}
 
@@ -51,7 +57,7 @@ public class SalesHistoryService {
 		return dataArray;
 	}
 
-	private ResponseEntity<String> callBoliga(RestTemplate restTemplate, String url, int page) {
+	private ResponseEntity<String> callBoliga(String url, int page) {
 		url = url + "&page=" + page;
 		//LOG.debug("****** Connecting to " + url);
 		ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
@@ -60,11 +66,10 @@ public class SalesHistoryService {
 	}
 
 	private void processResults(List<double[]> dataSet, ResponseEntity<String> response) {
-		ObjectMapper mapper = new ObjectMapper();
 		JsonNode root;
 		try {
-			root = mapper.readTree(response.getBody());
-		} catch (IOException e1) {
+			root = objectMapper.readTree(response.getBody());
+		} catch (IOException | NullPointerException e1) {
 			return;
 		}
 		JsonNode results = root.get("results");
@@ -97,11 +102,10 @@ public class SalesHistoryService {
 	}
 	
 	private int getMaxPage(ResponseEntity<String> response) {
-		ObjectMapper mapper = new ObjectMapper();
 		JsonNode root;
 		try {
-			root = mapper.readTree(response.getBody());
-		} catch (IOException e1) {
+			root = objectMapper.readTree(Objects.requireNonNull(response.getBody()));
+		} catch (IOException | NullPointerException e1) {
 			return Integer.MIN_VALUE;
 		}
 		return root.path("meta").path("maxPage").asInt();
