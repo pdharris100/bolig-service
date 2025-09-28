@@ -1,8 +1,5 @@
 package dk.bolig;
 
-import java.net.URL;
-import java.net.URLClassLoader;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -15,31 +12,34 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.File; // NEW
+
 @SpringBootApplication
 @EnableCaching
 public class Application extends SpringBootServletInitializer  {
 
-	private static final Logger LOG = LoggerFactory.getLogger(Application.class);
-    public static void main(String[] args) {    
-        SpringApplication.run(Application.class, args);
-        ClassLoader cl = ClassLoader.getSystemClassLoader();
+    private static final Logger LOG = LoggerFactory.getLogger(Application.class);
 
-        URL[] urls = ((URLClassLoader)cl).getURLs();
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+
+        // Log classpath entries in a Java 9+ friendly way
+        String cp = System.getProperty("java.class.path");
         LOG.debug("******** Classpath files start");
-        for(URL url: urls){
-        	LOG.debug(url.getFile());
+        for (String entry : cp.split(File.pathSeparator)) {
+            LOG.debug(entry);
         }
         LOG.debug("******** Classpath files end");
         LOG.debug("******** Started bolig microservice");
     }
 
     @Bean
-	public RestTemplate restTemplate(RestTemplateBuilder builder) {
-		return builder.build();
-	}
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        return builder.build();
+    }
 
-	@Bean
-	public ObjectMapper objectMapper() {
-		return new ObjectMapper();
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
     }
 }
