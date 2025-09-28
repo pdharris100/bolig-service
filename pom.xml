@@ -13,6 +13,11 @@
 		<version>2.7.18</version> <!-- LTS version of Spring Boot 2.x -->
 	</parent>
 
+	<properties>
+		<!-- Explicitly declare JUnit 5 version (managed by Spring Boot parent) -->
+		<junit-jupiter.version>5.8.2</junit-jupiter.version>
+	</properties>
+
 	<dependencies>
 
 		<dependency>
