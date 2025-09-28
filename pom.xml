@@ -13,23 +13,11 @@
 		<version>2.7.18</version> <!-- LTS version of Spring Boot 2.x -->
 	</parent>
 
-	<properties>
-		<!-- Explicitly declare JUnit 5 version (managed by Spring Boot parent) -->
-		<junit-jupiter.version>5.8.2</junit-jupiter.version>
-	</properties>
-
 	<dependencies>
 
 		<dependency>
-			<!-- Setup Spring MVC & REST, use Embedded Tomcat -->
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-
-		<dependency>
-			<!-- Spring Cloud starter -->
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter</artifactId>
 		</dependency>
 
 		<dependency>
@@ -54,6 +42,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-math3</artifactId>
+			<version>3.6.1</version>
 		</dependency>
 		
 		
@@ -71,29 +60,20 @@
 		</dependency>
 	</dependencies>
 
-	<!-- Spring Cloud dependencies -->
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>2021.0.9</version> <!-- Corresponds to Spring Boot 2.7.x -->
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
-				<configuration>
-					<webappDirectory>D:/home/site/wwwroot/webapps/ROOT</webappDirectory>
-				</configuration>
+				<!-- 
+				Removed hardcoded webappDirectory to make the build portable.
+				It now defaults to target/${project.build.finalName}
+				-->
 			</plugin>
-
 		</plugins>
 	</build>
 
