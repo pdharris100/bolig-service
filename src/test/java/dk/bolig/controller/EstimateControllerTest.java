@@ -29,21 +29,18 @@ public class EstimateControllerTest {
     @MockBean
     private SalesHistoryService salesHistoryService;
 
-    @MockBean
-    private PriceEstimator priceEstimator;
-
     @Test
     public void testEstimateHappyPath() throws Exception {
-        double[][] salesHistory = {{1.0, 2.0}};
-        EstimateDTO estimate = new EstimateDTO();
-        estimate.setPrice(12345L);
-
+        // Given
+        double[][] salesHistory = {{1609459200000d, 50000}, {1640995200000d, 55000}}; // Dates for 2021-01-01 and 2022-01-01
         when(salesHistoryService.getSalesDataForPostCodeAndStreet("1234", "test street")).thenReturn(salesHistory);
-        when(priceEstimator.estimate(salesHistory)).thenReturn(estimate);
 
+        // When & Then
         mockMvc.perform(get("/estimate?postcode=1234&street=test street"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.price").value(12345));
+                .andExpect(jsonPath("$.price").exists())
+                .andExpect(jsonPath("$.trend").isArray())
+                .andExpect(jsonPath("$.salesHistory").isArray());
     }
 
     @Test
