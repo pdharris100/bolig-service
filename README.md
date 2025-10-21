@@ -76,4 +76,4 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 This project is licensed under the MIT License.
 
 ## Contact
-For questions or support, contact [Paul Harris](mailto:paul@yourdomain.com).
+For questions or support, contact [Paul Harris](mailto:pdharris100@gmail.com).
